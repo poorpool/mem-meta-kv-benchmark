@@ -14,10 +14,10 @@
 单线程
 
 ```
-STL unordered_map benchmark, pid 3297947
+STL unordered_map benchmark, pid 3298532
 Put 10000000 elements, then get 10000000 elements
     generated key-value pairs, start testing...
-  put 1.9019 Mops, 1216.9667 MB/s, 10000000 elements in 5.2580 s
-  read 3.9722 Mops, 0.0000 MB/s, 10000000 elements in 2.5175 s
-  delete 2.8667 Mops, 0.0000 MB/s, 10000000 elements in 3.4883 s
+  put 1.8657 Mops, 227.0397 MB/s, 10000000 elements in 5.3599 s, cost 1216.9052 MB
+  get 3.9673 Mops, 0.0000 MB/s, 10000000 elements in 2.5206 s, cost 0.0000 MB
+  delete 2.8277 Mops, 0.0000 MB/s, 10000000 elements in 3.5364 s, cost 0.0000 MB
 ```

@@ -55,26 +55,27 @@ int main() {
   printf("    generated key-value pairs, start testing...\n");
 
   int64_t start_ts;        // 每段测试起始时间戳，微秒
-  int64_t start_mb;        // 每段测试起始 VmRSS，Byte
+  int64_t start_b;         // 每段测试起始 VmRSS，Byte
   int64_t used_time_in_us; // 每段测试使用的微秒
-  int64_t diff_mb;         // 每段测试使用的 VmRSS，Byte
+  int64_t diff_b;          // 每段测试使用的 VmRSS，Byte
 
   // test put
   start_ts = GetUs();
-  start_mb = GetVmRssInB(pid);
+  start_b = GetVmRssInB(pid);
   for (const auto &x : kvs) {
     hash_map[x.key] = x.value;
   }
   used_time_in_us = GetUs() - start_ts;
-  diff_mb = GetVmRssInB(pid) - start_mb;
-  printf("  put %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+  diff_b = GetVmRssInB(pid) - start_b;
+  printf("  put %.4f Mops, %.4f MB/s, %d elements in %.4f s, cost %.4f MB\n",
          kOpNum / static_cast<double>(used_time_in_us),
-         static_cast<double>(diff_mb) / 1000000, kOpNum,
-         static_cast<double>(used_time_in_us) / 1000000);
+         static_cast<double>(diff_b) / used_time_in_us, // B/us == MB/s
+         kOpNum, static_cast<double>(used_time_in_us) / 1000000,
+         static_cast<double>(diff_b) / 1000000);
 
   // test get
   start_ts = GetUs();
-  start_mb = GetVmRssInB(pid);
+  start_b = GetVmRssInB(pid);
   for (auto &x : kvs) {
     int32_t value = hash_map[x.key];
     if (value != x.value) {
@@ -83,15 +84,16 @@ int main() {
     }
   }
   used_time_in_us = GetUs() - start_ts;
-  diff_mb = GetVmRssInB(pid) - start_mb;
-  printf("  read %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+  diff_b = GetVmRssInB(pid) - start_b;
+  printf("  get %.4f Mops, %.4f MB/s, %d elements in %.4f s, cost %.4f MB\n",
          kOpNum / static_cast<double>(used_time_in_us),
-         static_cast<double>(diff_mb) / 1000000, kOpNum,
-         static_cast<double>(used_time_in_us) / 1000000);
+         static_cast<double>(diff_b) / used_time_in_us, // B/us == MB/s
+         kOpNum, static_cast<double>(used_time_in_us) / 1000000,
+         static_cast<double>(diff_b) / 1000000);
 
   // test delete
   start_ts = GetUs();
-  start_mb = GetVmRssInB(pid);
+  start_b = GetVmRssInB(pid);
   for (const auto &x : kvs) {
     hash_map.erase(x.key);
   }
@@ -100,11 +102,12 @@ int main() {
     exit(-1);
   }
   used_time_in_us = GetUs() - start_ts;
-  diff_mb = GetVmRssInB(pid) - start_mb;
-  printf("  delete %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+  diff_b = GetVmRssInB(pid) - start_b;
+  printf("  delete %.4f Mops, %.4f MB/s, %d elements in %.4f s, cost %.4f MB\n",
          kOpNum / static_cast<double>(used_time_in_us),
-         static_cast<double>(diff_mb) / 1000000, kOpNum,
-         static_cast<double>(used_time_in_us) / 1000000);
+         static_cast<double>(diff_b) / used_time_in_us, // B/us == MB/s
+         kOpNum, static_cast<double>(used_time_in_us) / 1000000,
+         static_cast<double>(diff_b) / 1000000);
 
   return 0;
 }
