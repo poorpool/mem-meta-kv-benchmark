@@ -1,9 +1,11 @@
+#include "utils.h"
 #include <bits/stdint-intn.h>
 #include <bits/types/struct_timeval.h>
 #include <cstdio>
 #include <random>
 #include <string>
 #include <sys/time.h>
+#include <unistd.h>
 #include <unordered_map>
 #include <vector>
 using std::mt19937;
@@ -44,25 +46,35 @@ void GenerateKvPairs(vector<KvPair> &kvs) {
 }
 
 int main() {
-  printf("STL unordered_map benchmark\n");
+  int pid = getpid();
+  printf("STL unordered_map benchmark, pid %d\n", pid);
   printf("Put %d elements, then get %d elements\n", kOpNum, kOpNum);
 
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
   printf("    generated key-value pairs, start testing...\n");
 
+  int64_t start_ts;        // 每段测试起始时间戳，微秒
+  int64_t start_mb;        // 每段测试起始 VmRSS，Byte
+  int64_t used_time_in_us; // 每段测试使用的微秒
+  int64_t diff_mb;         // 每段测试使用的 VmRSS，Byte
+
   // test put
-  int64_t start_ts = GetUs();
+  start_ts = GetUs();
+  start_mb = GetVmRssInB(pid);
   for (const auto &x : kvs) {
     hash_map[x.key] = x.value;
   }
-  int64_t used_time_in_us = GetUs() - start_ts;
-  printf("  put %.4f Mops, %d elements in %.4f s\n",
-         kOpNum / static_cast<double>(used_time_in_us), kOpNum,
+  used_time_in_us = GetUs() - start_ts;
+  diff_mb = GetVmRssInB(pid) - start_mb;
+  printf("  put %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+         kOpNum / static_cast<double>(used_time_in_us),
+         static_cast<double>(diff_mb) / 1000000, kOpNum,
          static_cast<double>(used_time_in_us) / 1000000);
 
   // test get
   start_ts = GetUs();
+  start_mb = GetVmRssInB(pid);
   for (auto &x : kvs) {
     int32_t value = hash_map[x.key];
     if (value != x.value) {
@@ -71,12 +83,15 @@ int main() {
     }
   }
   used_time_in_us = GetUs() - start_ts;
-  printf("  read %.4f Mops, %d elements in %.4f s\n",
-         kOpNum / static_cast<double>(used_time_in_us), kOpNum,
+  diff_mb = GetVmRssInB(pid) - start_mb;
+  printf("  read %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+         kOpNum / static_cast<double>(used_time_in_us),
+         static_cast<double>(diff_mb) / 1000000, kOpNum,
          static_cast<double>(used_time_in_us) / 1000000);
 
   // test delete
   start_ts = GetUs();
+  start_mb = GetVmRssInB(pid);
   for (const auto &x : kvs) {
     hash_map.erase(x.key);
   }
@@ -85,8 +100,10 @@ int main() {
     exit(-1);
   }
   used_time_in_us = GetUs() - start_ts;
-  printf("  delete %.4f Mops, %d elements in %.4f s\n",
-         kOpNum / static_cast<double>(used_time_in_us), kOpNum,
+  diff_mb = GetVmRssInB(pid) - start_mb;
+  printf("  delete %.4f Mops, %.4f MB/s, %d elements in %.4f s\n",
+         kOpNum / static_cast<double>(used_time_in_us),
+         static_cast<double>(diff_mb) / 1000000, kOpNum,
          static_cast<double>(used_time_in_us) / 1000000);
 
   return 0;
