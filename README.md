@@ -13,9 +13,9 @@
 
 ```
 STL unordered_map benchmark
-Put 10000000 elements sequentially, then get 10000000 elements sequentially
+Put 10000000 elements, then get 10000000 elements
     generated key-value pairs, start testing...
-  put 1.0742 Mops, 10000000 elements in 9.3091 s
-  read 1.4089 Mops, 10000000 elements in 7.0979 s
-  delete 1.1450 Mops, 10000000 elements in 8.7336 s
+  put 1.2783 Mops, 10000000 elements in 7.8232 s
+  read 2.5116 Mops, 10000000 elements in 3.9816 s
+  delete 1.6303 Mops, 10000000 elements in 6.1337 s
 ```
