@@ -69,5 +69,19 @@ int main() {
          kOpNum / static_cast<double>(used_time_in_us), kOpNum,
          static_cast<double>(used_time_in_us) / 1000000);
 
+  // test delete
+  start_ts = GetUs();
+  for (const auto &x : kvs) {
+    hash_map.erase(x.key);
+  }
+  if (!hash_map.empty()) {
+    printf("ERR!\n");
+    exit(-1);
+  }
+  used_time_in_us = GetUs() - start_ts;
+  printf("  delete %.4f Mops, %d elements in %.4f s\n",
+         kOpNum / static_cast<double>(used_time_in_us), kOpNum,
+         static_cast<double>(used_time_in_us) / 1000000);
+
   return 0;
 }
