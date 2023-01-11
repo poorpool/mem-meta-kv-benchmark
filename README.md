@@ -74,7 +74,7 @@ auto main() -> int {
 }
 ```
 
-单线程：
+单线程（默认哈希函数）：
 
 ```
 ankerl::unordered_dense::map benchmark, pid 3325576
@@ -88,7 +88,7 @@ Each thread put, get, delete 10000000 elements, total 10000000 ops
       per-thread 4.4586 Mops
 ```
 
-16 线程
+**16 线程（默认哈希函数）**：
 
 ```
 ankerl::unordered_dense::map benchmark, pid 3325677
@@ -100,4 +100,18 @@ Each thread put, get, delete 10000000 elements, total 160000000 ops
       per-thread 8.5263 Mops
 [DEL] total 58.1234 Mops, in 2.7528 s
       per-thread 3.6327 Mops
+```
+
+16 线程 std::hash：
+
+```
+ankerl::unordered_dense::map benchmark, pid 3327935
+16 thread(s), start_core 40
+Each thread put, get, delete 10000000 elements, total 160000000 ops
+[PUT] total 25.0835 Mops, in 6.3787 s, 2543.8381 MB/s, cost 16226.3572 MB
+      per-thread 1.5677 Mops, 158.9899 MB/s
+[GET] total 135.6238 Mops, in 1.1797 s
+      per-thread 8.4765 Mops
+[DEL] total 61.7490 Mops, in 2.5911 s
+      per-thread 3.8593 Mops
 ```

@@ -5,6 +5,7 @@
 #include <bits/types/struct_timeval.h>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <pthread.h>
 #include <random>
@@ -75,6 +76,7 @@ void ThreadFunc(int idx) {
     }
   }
   ankerl::unordered_dense::map<string, int32_t> hash_map;
+  // ankerl::unordered_dense::map<string, int32_t, std::hash<string>> hash_map;
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
 
