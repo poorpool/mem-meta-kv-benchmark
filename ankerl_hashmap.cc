@@ -21,7 +21,7 @@ using std::thread;
 using std::uniform_int_distribution;
 using std::vector;
 
-constexpr int kOpNum = 10000000;
+constexpr int kOpNum = 25000000;
 int thread_num; // 执行测试的线程数量
 int start_core; // 这些线程从哪里开始绑核，-1 代表不绑核
 

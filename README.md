@@ -11,6 +11,8 @@
 
 ## unordered_map
 
+（估计ops上升到25000000还会更低，怕爆内存就没测）
+
 1 线程
 
 ```
@@ -77,41 +79,41 @@ auto main() -> int {
 单线程（默认哈希函数）：
 
 ```
-ankerl::unordered_dense::map benchmark, pid 3325576
+ankerl::unordered_dense::map benchmark, pid 3361685
 1 thread(s), start_core 40
-Each thread put, get, delete 10000000 elements, total 10000000 ops
-[PUT] total 3.5006 Mops, in 2.8567 s, 355.0110 MB/s, cost 1014.1532 MB
-      per-thread 3.5006 Mops, 355.0110 MB/s
-[GET] total 10.7456 Mops, in 0.9306 s
-      per-thread 10.7456 Mops
-[DEL] total 4.4586 Mops, in 2.2428 s
-      per-thread 4.4586 Mops
+Each thread put, get, delete 25000000 elements, total 25000000 ops
+[PUT] total 3.4378 Mops, in 7.2721 s, 339.7593 MB/s, cost 2470.7564 MB
+      per-thread 3.4378 Mops, 339.7593 MB/s
+[GET] total 8.8703 Mops, in 2.8184 s
+      per-thread 8.8703 Mops
+[DEL] total 4.0132 Mops, in 6.2295 s
+      per-thread 4.0132 Mops
 ```
 
 **16 线程（默认哈希函数）**：
 
 ```
-ankerl::unordered_dense::map benchmark, pid 3325677
+ankerl::unordered_dense::map benchmark, pid 3360026
 16 thread(s), start_core 40
-Each thread put, get, delete 10000000 elements, total 160000000 ops
-[PUT] total 25.8268 Mops, in 6.1951 s, 2619.2087 MB/s, cost 16226.2753 MB
-      per-thread 1.6142 Mops, 163.7005 MB/s
-[GET] total 136.4213 Mops, in 1.1728 s
-      per-thread 8.5263 Mops
-[DEL] total 58.1234 Mops, in 2.7528 s
-      per-thread 3.6327 Mops
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+[PUT] total 18.9509 Mops, in 21.1072 s, 1871.1319 MB/s, cost 39494.3447 MB
+      per-thread 1.1844 Mops, 116.9457 MB/s
+[GET] total 79.0079 Mops, in 5.0628 s
+      per-thread 4.9380 Mops
+[DEL] total 38.0489 Mops, in 10.5128 s
+      per-thread 2.3781 Mops
 ```
 
 16 线程 std::hash：
 
 ```
-ankerl::unordered_dense::map benchmark, pid 3327935
+ankerl::unordered_dense::map benchmark, pid 3362193
 16 thread(s), start_core 40
-Each thread put, get, delete 10000000 elements, total 160000000 ops
-[PUT] total 25.0835 Mops, in 6.3787 s, 2543.8381 MB/s, cost 16226.3572 MB
-      per-thread 1.5677 Mops, 158.9899 MB/s
-[GET] total 135.6238 Mops, in 1.1797 s
-      per-thread 8.4765 Mops
-[DEL] total 61.7490 Mops, in 2.5911 s
-      per-thread 3.8593 Mops
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+[PUT] total 18.1298 Mops, in 22.0631 s, 1790.0691 MB/s, cost 39494.4922 MB
+      per-thread 1.1331 Mops, 111.8793 MB/s
+[GET] total 70.8526 Mops, in 5.6455 s
+      per-thread 4.4283 Mops
+[DEL] total 40.7844 Mops, in 9.8077 s
+      per-thread 2.5490 Mops
 ```
