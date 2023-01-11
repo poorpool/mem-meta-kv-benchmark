@@ -18,7 +18,7 @@ int64_t GetVmRssInB(int pid) {
   string str;
 
   while (getline(is, str)) {
-    if (str.rfind("VmRSS", 0) != 0) {
+    if (str.rfind("VmRSS", 0) != 0) { // NOLINT
       continue;
     }
     stringstream sst(str);

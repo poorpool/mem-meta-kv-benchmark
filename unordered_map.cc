@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
   }
   printf("%d thread(s), start_core %d\n", thread_num, start_core);
   printf("Each thread put, get, delete %d elements, total %ld ops\n", kOpNum,
-         int64_t(kOpNum) * thread_num);
+         static_cast<int64_t>(kOpNum) * thread_num);
 
   vector<thread> threads;
   threads.reserve(thread_num);

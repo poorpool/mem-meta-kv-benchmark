@@ -1,5 +1,5 @@
+#include "hashs/hash_table8.hpp"
 #include "utils.h"
-#include <ankerl/unordered_dense.h>
 #include <atomic>
 #include <bits/stdint-intn.h>
 #include <bits/types/struct_timeval.h>
@@ -75,9 +75,8 @@ void ThreadFunc(int idx) {
       exit(-1);
     }
   }
-  ankerl::unordered_dense::map<string, int32_t> hash_map;
-  hash_map.reserve(kOpNum * 2);
-  // ankerl::unordered_dense::map<string, int32_t, std::hash<string>> hash_map;
+  emhash8::HashMap<string, int32_t> hash_map;
+  hash_map.reserve(kOpNum * 2, false);
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
 
@@ -123,7 +122,7 @@ int main(int argc, char *argv[]) {
   }
 
   int pid = getpid();
-  printf("ankerl::unordered_dense::map benchmark, pid %d\n", pid);
+  printf("emhash8::HashMap benchmark, pid %d\n", pid);
   if (argc == 1) {
     thread_num = 1;
     start_core = -1;

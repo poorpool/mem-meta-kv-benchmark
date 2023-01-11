@@ -9,6 +9,12 @@
 
 默认开启 O3 优化，绑核
 
+编译运行
+
+```bash
+./build.sh && ./run.sh <thread_num> <start_core>
+```
+
 ## unordered_map
 
 （估计ops上升到25000000还会更低，怕爆内存就没测）
@@ -144,4 +150,38 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
       per-thread 8.1603 Mops
 [DEL] total 48.9582 Mops, in 8.1702 s
       per-thread 3.0599 Mops
+```
+
+### emhash8
+
+https://github.com/ktprime/emhash
+
+并没有那么棒
+
+单线程 reserve 两倍空间
+
+```
+emhash8::HashMap benchmark, pid 3397552
+1 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 25000000 ops
+[PUT] total 3.9116 Mops, in 6.3912 s, 344.2353 MB/s, cost 2200.0927 MB
+      per-thread 3.9116 Mops, 344.2353 MB/s
+[GET] total 5.6083 Mops, in 4.4577 s
+      per-thread 5.6083 Mops
+[DEL] total 4.9624 Mops, in 5.0379 s
+      per-thread 4.9624 Mops
+```
+
+16 线程 reserve 两倍空间
+
+```
+emhash8::HashMap benchmark, pid 3398153
+16 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+[PUT] total 29.2382 Mops, in 13.6807 s, 2572.9841 MB/s, cost 35200.2908 MB
+      per-thread 1.8274 Mops, 160.8115 MB/s
+[GET] total 59.3415 Mops, in 6.7406 s
+      per-thread 3.7088 Mops
+[DEL] total 63.4724 Mops, in 6.3020 s
+      per-thread 3.9670 Mops
 ```

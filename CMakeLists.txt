@@ -13,3 +13,7 @@ target_link_libraries(umap_bmtest pthread)
 add_executable(ankerl_hashmap_bmtest ankerl_hashmap.cc utils.cc)
 find_package(unordered_dense CONFIG REQUIRED)
 target_link_libraries(ankerl_hashmap_bmtest pthread unordered_dense::unordered_dense)
+
+add_executable(emhash8_bmtest emhash8.cc utils.cc)
+# target_compile_definitions(emhash8_bmtest PUBLIC EMH_HIGH_LOAD) # 别开这个宏，开了跑不出结果了
+target_link_libraries(emhash8_bmtest pthread)
