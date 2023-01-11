@@ -90,7 +90,21 @@ Each thread put, get, delete 25000000 elements, total 25000000 ops
       per-thread 4.0132 Mops
 ```
 
-**16 线程（默认哈希函数）**：
+4 线程，增大测试大小
+
+```
+ankerl::unordered_dense::map benchmark, pid 3364887
+4 thread(s), start_core 40
+Each thread put, get, delete 100000000 elements, total 400000000 ops
+[PUT] total 7.5701 Mops, in 52.8398 s, 747.4531 MB/s, cost 39495.2581 MB
+      per-thread 1.8925 Mops, 186.8633 MB/s
+[GET] total 23.2180 Mops, in 17.2280 s
+      per-thread 5.8045 Mops
+[DEL] total 9.8496 Mops, in 40.6108 s
+      per-thread 2.4624 Mops
+```
+
+16 线程（默认哈希函数）：
 
 ```
 ankerl::unordered_dense::map benchmark, pid 3360026
@@ -116,4 +130,18 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
       per-thread 4.4283 Mops
 [DEL] total 40.7844 Mops, in 9.8077 s
       per-thread 2.5490 Mops
+```
+
+**16 线程 reserve 两倍空间**：
+
+```
+ankerl::unordered_dense::map benchmark, pid 3368134
+16 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+[PUT] total 29.0868 Mops, in 13.7519 s, 2559.5760 MB/s, cost 35199.1357 MB
+      per-thread 1.8179 Mops, 159.9735 MB/s
+[GET] total 130.5646 Mops, in 3.0636 s
+      per-thread 8.1603 Mops
+[DEL] total 48.9582 Mops, in 8.1702 s
+      per-thread 3.0599 Mops
 ```

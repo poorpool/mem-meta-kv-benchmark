@@ -76,6 +76,7 @@ void ThreadFunc(int idx) {
     }
   }
   ankerl::unordered_dense::map<string, int32_t> hash_map;
+  hash_map.reserve(kOpNum * 2);
   // ankerl::unordered_dense::map<string, int32_t, std::hash<string>> hash_map;
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
