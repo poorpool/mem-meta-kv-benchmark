@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <ankerl/unordered_dense.h>
 #include <atomic>
 #include <bits/stdint-intn.h>
 #include <bits/types/struct_timeval.h>
@@ -11,14 +12,12 @@
 #include <sys/time.h>
 #include <thread>
 #include <unistd.h>
-#include <unordered_map>
 #include <vector>
 using std::mt19937;
 using std::random_device;
 using std::string;
 using std::thread;
 using std::uniform_int_distribution;
-using std::unordered_map;
 using std::vector;
 
 constexpr int kOpNum = 10000000;
@@ -75,7 +74,7 @@ void ThreadFunc(int idx) {
       exit(-1);
     }
   }
-  unordered_map<string, int32_t> hash_map;
+  ankerl::unordered_dense::map<string, int32_t> hash_map;
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
 
@@ -121,7 +120,7 @@ int main(int argc, char *argv[]) {
   }
 
   int pid = getpid();
-  printf("STL unordered_map benchmark, pid %d\n", pid);
+  printf("ankerl::unordered_dense::map benchmark, pid %d\n", pid);
   if (argc == 1) {
     thread_num = 1;
     start_core = -1;
