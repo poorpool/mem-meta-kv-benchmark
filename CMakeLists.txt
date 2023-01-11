@@ -8,3 +8,4 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 add_executable(umap_bmtest unordered_map.cc utils.cc)
+target_link_libraries(umap_bmtest pthread)
