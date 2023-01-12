@@ -138,7 +138,7 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
       per-thread 2.5490 Mops
 ```
 
-**16 线程 reserve 两倍空间**：
+16 线程 reserve 两倍空间：
 
 ```
 ankerl::unordered_dense::map benchmark, pid 3368134
@@ -150,6 +150,34 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
       per-thread 8.1603 Mops
 [DEL] total 48.9582 Mops, in 8.1702 s
       per-thread 3.0599 Mops
+```
+
+LD_PRELOAD=libjemalloc.so 单线程预留两倍空间
+
+```
+ankerl::unordered_dense::map benchmark, pid 3802564
+1 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 25000000 ops
+[PUT] total 5.7464 Mops, in 4.3506 s, 419.8304 MB/s, cost 1826.4965 MB
+      per-thread 5.7464 Mops, 419.8304 MB/s
+[GET] total 11.6225 Mops, in 2.1510 s
+      per-thread 11.6225 Mops
+[DEL] total 5.1305 Mops, in 4.8728 s
+      per-thread 5.1305 Mops
+```
+
+**LD_PRELOAD=libjemalloc.so 16 线程预留两倍空间**
+
+```
+ankerl::unordered_dense::map benchmark, pid 3803136
+16 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+[PUT] total 64.6029 Mops, in 6.1917 s, 4720.2056 MB/s, cost 29225.9840 MB
+      per-thread 4.0377 Mops, 295.0129 MB/s
+[GET] total 131.5404 Mops, in 3.0409 s
+      per-thread 8.2213 Mops
+[DEL] total 59.9129 Mops, in 6.6764 s
+      per-thread 3.7446 Mops
 ```
 
 ### emhash8
