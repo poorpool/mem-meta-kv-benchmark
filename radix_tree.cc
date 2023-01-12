@@ -48,6 +48,7 @@ void GenerateKvPairs(vector<KvPair> &kvs) {
   kvs = vector<KvPair>(kOpNum, KvPair{});
   for (int i = 0; i < kOpNum; i++) {
     sprintf(kvs[i].s, "file.mdtest.%d.%d", dis(gen), dis(gen));
+    // sprintf(kvs[i].s, "file.mdtest.%d.%d", i / 10000, i);
     kvs[i].len = strlen(kvs[i].s);
     kvs[i].value = dis(gen);
   }
@@ -78,7 +79,7 @@ void ThreadFunc(int idx) {
   }
   char huge_name[35];
   sprintf(huge_name, "radix_cyx_test_%d", idx);
-  NumaAllocator atr(3 * GB, huge_name); // 不同线程的 huge_name 必须不同
+  NumaAllocator atr(2.5 * GB, huge_name); // 不同线程的 huge_name 必须不同
   Trie *trie = trie_create(40000000, atr, 0);
   TrieNode *root = trie_alloc_root(trie);
   vector<KvPair> kvs;

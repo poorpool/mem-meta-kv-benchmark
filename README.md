@@ -188,26 +188,208 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
 
 ### radix_tree
 
-内存占用相对小一些，性能没 ankerl 哈希表那么逆天，但是比 unordered_map 快。
+在key为`file.mdtest.X.Y`value为int32_t的格式下，内存占用基本上最小了。因为使用了 hugepage，VmRSS 测的不准，内存占用以代码输出为准。
 
-因为使用了 hugepage，VmRSS 测的不准，内存占用以代码输出为准
+因为数据结构是字典树，所以效率跟key的结构有着很大的关系
 
-单线程，NUMA Allocator 预留了 3GB `NumaAllocator atr(3 * GB, huge_name);`，然后 Trie 预留了 40000000 个节点 2.38 GB，实际使用了 2.11 GB。想要哪个口径的数据，就把所有线程这些数据加起来即可：
+**顺序key**：
+
+```cpp
+sprintf(kvs[i].s, "file.mdtest.%d.%d", i / 10000, i);
+```
+
+单线程：
 
 ```
-radix_tree benchmark, pid 3743676
+radix_tree benchmark, pid 3764370
 1 thread(s), start_core 40
 Each thread put, get, delete 25000000 elements, total 25000000 ops
 MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
 MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_0-0
 MCatFS worker0 Info: Huge seg current_numa=req_numa=0
-MCatFS worker0 Info: Trie Use 35436180/40000000, 2.112161GB/2.384186GB
-[PUT] total 2.4312 Mops, in 10.2832 s
-      per-thread 2.4312 Mops
-[GET] total 2.3410 Mops, in 10.6790 s
-      per-thread 2.3410 Mops
-[DEL] total 2.1794 Mops, in 11.4711 s
-      per-thread 2.1794 Mops
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+[PUT] total 11.6053 Mops, in 2.1542 s
+      per-thread 11.6053 Mops
+[GET] total 14.2320 Mops, in 1.7566 s
+      per-thread 14.2320 Mops
+[DEL] total 13.4661 Mops, in 1.8565 s
+      per-thread 13.4661 Mops
 ```
 
-16 线程 Hugepage 不够了，还没测
+**16 线程**：
+
+```
+radix_tree benchmark, pid 3764731
+16 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_1-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_2-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_3-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_0-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_4-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_5-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_6-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_7-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_9-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_12-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_10-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_8-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_11-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_13-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_15-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_14-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
+[PUT] total 137.6324 Mops, in 2.9063 s
+      per-thread 8.6020 Mops
+[GET] total 177.0181 Mops, in 2.2597 s
+      per-thread 11.0636 Mops
+[DEL] total 153.1355 Mops, in 2.6121 s
+      per-thread 9.5710 Mops
+```
+
+**随机key**：
+
+
+
+单线程，NUMA Allocator 预留了 2.5 GB `NumaAllocator atr(3 * GB, huge_name);`，然后 Trie 预留了 40000000 个节点 2.38 GB，实际使用了 2.11 GB。想要哪个口径的数据，就把所有线程这些数据加起来即可：
+
+```
+radix_tree benchmark, pid 3765934
+1 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 25000000 ops
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_0-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Use 35433634/40000000, 2.112009GB/2.384186GB
+[PUT] total 2.4082 Mops, in 10.3810 s
+      per-thread 2.4082 Mops
+[GET] total 2.3116 Mops, in 10.8150 s
+      per-thread 2.3116 Mops
+[DEL] total 2.1434 Mops, in 11.6637 s
+      per-thread 2.1434 Mops
+```
+
+16 线程
+
+```
+radix_tree benchmark, pid 3766331
+16 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 400000000 ops
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_1-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_0-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_3-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_2-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_4-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_7-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_5-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_6-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_8-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_9-0
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_10-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_13-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_11-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_12-0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_14-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_15-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Use 35436588/40000000, 2.112185GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35436660/40000000, 2.112190GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35438685/40000000, 2.112310GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435053/40000000, 2.112094GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35436602/40000000, 2.112186GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35436210/40000000, 2.112163GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435194/40000000, 2.112102GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435380/40000000, 2.112113GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35434176/40000000, 2.112041GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435880/40000000, 2.112143GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35436375/40000000, 2.112173GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435411/40000000, 2.112115GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435677/40000000, 2.112131GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35433953/40000000, 2.112028GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35434954/40000000, 2.112088GB/2.384186GB
+MCatFS worker0 Info: Trie Use 35435377/40000000, 2.112113GB/2.384186GB
+[PUT] total 26.1067 Mops, in 15.3218 s
+      per-thread 1.6317 Mops
+[GET] total 27.0473 Mops, in 14.7889 s
+      per-thread 1.6905 Mops
+[DEL] total 24.6983 Mops, in 16.1955 s
+      per-thread 1.5436 Mops
+```
