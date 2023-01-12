@@ -192,6 +192,10 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
 
 因为数据结构是字典树，所以效率跟key的结构有着很大的关系
 
+TLDR:
+- 顺序key put 137 Mops，get 177 Mops，实际使用的trie节点占用的空间0.91 GB/s
+- 随机key put 26 Mops，get 27 Mops，实际使用的trie节点占用的空间2.2GB/s（因为Mops小，一次操作的占用空间更大）
+
 **顺序key**：
 
 ```cpp
@@ -296,7 +300,9 @@ MCatFS worker0 Info: Trie Use 2779140/40000000, 0.165650GB/2.384186GB
 
 **随机key**：
 
-
+```cpp
+sprintf(kvs[i].s, "file.mdtest.%d.%d", dis(gen), dis(gen));
+```
 
 单线程，NUMA Allocator 预留了 2.5 GB `NumaAllocator atr(3 * GB, huge_name);`，然后 Trie 预留了 40000000 个节点 2.38 GB，实际使用了 2.11 GB。想要哪个口径的数据，就把所有线程这些数据加起来即可：
 
