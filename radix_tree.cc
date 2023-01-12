@@ -1,6 +1,7 @@
-#include "3rdparty/hash_table8.hpp"
 #include "3rdparty/mcatfs/radix_tree.h"
+#include "3rdparty/mcatfs/numa_tools.h"
 #include "utils.h"
+#include <ankerl/unordered_dense.h>
 #include <atomic>
 #include <bits/stdint-intn.h>
 #include <bits/types/struct_timeval.h>
@@ -27,7 +28,8 @@ int thread_num; // 执行测试的线程数量
 int start_core; // 这些线程从哪里开始绑核，-1 代表不绑核
 
 struct KvPair {
-  string key;
+  char s[64];
+  int len;
   int32_t value;
 };
 
@@ -42,14 +44,12 @@ void GenerateKvPairs(vector<KvPair> &kvs) {
   random_device rd;
   mt19937 gen(rd());
   uniform_int_distribution<int> dis(0, kOpNum);
-  char key_buffer[105];
 
+  kvs = vector<KvPair>(kOpNum, KvPair{});
   for (int i = 0; i < kOpNum; i++) {
-    sprintf(key_buffer, "file.mdtest.%d.%d", dis(gen), dis(gen));
-    string key = key_buffer;
-    int32_t value = dis(gen);
-
-    kvs.push_back({key, value});
+    sprintf(kvs[i].s, "file.mdtest.%d.%d", dis(gen), dis(gen));
+    kvs[i].len = strlen(kvs[i].s);
+    kvs[i].value = dis(gen);
   }
 }
 
@@ -76,8 +76,11 @@ void ThreadFunc(int idx) {
       exit(-1);
     }
   }
-  emhash8::HashMap<string, int32_t> hash_map;
-  hash_map.reserve(kOpNum * 2, false);
+  char huge_name[35];
+  sprintf(huge_name, "radix_cyx_test_%d", idx);
+  NumaAllocator atr(3 * GB, huge_name); // 不同线程的 huge_name 必须不同
+  Trie *trie = trie_create(40000000, atr, 0);
+  TrieNode *root = trie_alloc_root(trie);
   vector<KvPair> kvs;
   GenerateKvPairs(kvs);
 
@@ -86,16 +89,17 @@ void ThreadFunc(int idx) {
   // 主线程计时中
   pthread_barrier_wait(&barrier2);
   for (const auto &x : kvs) {
-    hash_map[x.key] = x.value;
+    trie_insert(trie, root, x.s, x.len, x.value);
   }
   pthread_barrier_wait(&barrier3);
+  trie_print_use(trie);
 
   // test get
   pthread_barrier_wait(&barrier1);
   // 主线程计时中
   pthread_barrier_wait(&barrier2);
   for (auto &x : kvs) {
-    int32_t value = hash_map[x.key];
+    int32_t value = trie_get(trie, root, x.s, x.len);
     if (value != x.value) {
       // 因为随机生成 key 的时候可能有冲突，不报错
       x.value = value;
@@ -108,12 +112,15 @@ void ThreadFunc(int idx) {
   // 主线程计时中
   pthread_barrier_wait(&barrier2);
   for (const auto &x : kvs) {
-    hash_map.erase(x.key);
+    trie_del(trie, root, x.s, x.len);
   }
   pthread_barrier_wait(&barrier3);
-  if (!hash_map.empty()) {
+  if (trie->use_cnt != 1) {
     printf("ERROR delete!\n");
+    trie_dump(trie, root);
+    trie_print_use(trie);
   }
+  trie_free(trie);
 }
 
 int main(int argc, char *argv[]) {
@@ -123,7 +130,7 @@ int main(int argc, char *argv[]) {
   }
 
   int pid = getpid();
-  printf("emhash8::HashMap benchmark, pid %d\n", pid);
+  printf("radix_tree benchmark, pid %d\n", pid);
   if (argc == 1) {
     thread_num = 1;
     start_core = -1;
@@ -164,16 +171,11 @@ int main(int argc, char *argv[]) {
   int64_t used_time_in_us = GetUs() - start_ts;
   int64_t diff_b = GetVmRssInB(pid) - start_b;
 
-  printf(
-      "[PUT] total %.4f Mops, in %.4f s, %.4f MB/s, cost %.4f MB\n"
-      "      per-thread %.4f Mops, %.4f MB/s\n",
-      static_cast<double>(kOpNum) * thread_num / used_time_in_us,
-      static_cast<double>(used_time_in_us) / 1000000,
-      static_cast<double>(diff_b) / used_time_in_us, // B/us == MB/s
-      static_cast<double>(diff_b) / 1000000,
-      static_cast<double>(kOpNum) / used_time_in_us,
-      static_cast<double>(diff_b) / used_time_in_us / thread_num // B/us == MB/s
-  );
+  printf("[PUT] total %.4f Mops, in %.4f s\n"
+         "      per-thread %.4f Mops\n",
+         static_cast<double>(kOpNum) * thread_num / used_time_in_us,
+         static_cast<double>(used_time_in_us) / 1000000,
+         static_cast<double>(kOpNum) / used_time_in_us);
 
   // GET
   // barrier1 已经初始化

@@ -185,3 +185,29 @@ Each thread put, get, delete 25000000 elements, total 400000000 ops
 [DEL] total 63.4724 Mops, in 6.3020 s
       per-thread 3.9670 Mops
 ```
+
+### radix_tree
+
+内存占用相对小一些，性能没 ankerl 哈希表那么逆天，但是比 unordered_map 快。
+
+因为使用了 hugepage，VmRSS 测的不准，内存占用以代码输出为准
+
+单线程，NUMA Allocator 预留了 3GB `NumaAllocator atr(3 * GB, huge_name);`，然后 Trie 预留了 40000000 个节点 2.38 GB，实际使用了 2.11 GB。想要哪个口径的数据，就把所有线程这些数据加起来即可：
+
+```
+radix_tree benchmark, pid 3743676
+1 thread(s), start_core 40
+Each thread put, get, delete 25000000 elements, total 25000000 ops
+MCatFS worker0 Info: Trie Create, Max node 40000000, 2.384186GB
+MCatFS worker0 Info: Huge Seg file create: /dev/hugepages/radix_cyx_test_0-0
+MCatFS worker0 Info: Huge seg current_numa=req_numa=0
+MCatFS worker0 Info: Trie Use 35436180/40000000, 2.112161GB/2.384186GB
+[PUT] total 2.4312 Mops, in 10.2832 s
+      per-thread 2.4312 Mops
+[GET] total 2.3410 Mops, in 10.6790 s
+      per-thread 2.3410 Mops
+[DEL] total 2.1794 Mops, in 11.4711 s
+      per-thread 2.1794 Mops
+```
+
+16 线程 Hugepage 不够了，还没测
